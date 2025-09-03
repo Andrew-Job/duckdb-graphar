@@ -1,21 +1,30 @@
 name: Publish Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types: [completed]
+    branches: [main]
 
 jobs:
   publish:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
+    if: github.event.workflow_run.conclusion == 'success' # && startsWith(github.event.workflow_run.head_branch, 'refs/tags/v')
 
     steps:
+      - name: Extract version from tag
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Building for version: $VERSION"
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: ubuntu-artifacts
+          run-id: ${{ github.event.workflow_run.id }}
           path: ./downloaded-artifacts
 
       - name: Verify downloaded artifacts
@@ -23,35 +32,50 @@ jobs:
           echo "Contents of downloaded artifacts:"
           ls -la ./downloaded-artifacts/
 
-          echo "Repository contents:"
-          ls -la -R ./downloaded-artifacts/repository/ || echo "Repository directory not found"
+          if [ ! -f "./downloaded-artifacts/duckdb" ]; then
+            echo "ERROR: DuckDB binary not found!"
+            exit 1
+          fi
 
+          if [ ! -d "./downloaded-artifacts/repository" ]; then
+            echo "ERROR: Extensions repository not found!"
+            exit 1
+          fi
 
-      - name: Create DuckDB package
+          echo "Extensions found:"
+          find ./downloaded-artifacts/repository -name "*.duckdb_extension" | head -10
+
+      - name: Create DuckDB binary package
         run: |
           mkdir -p duckdb-package
           cp ./downloaded-artifacts/duckdb duckdb-package/
-          tar -czf duckdb-${{ github.ref_name }}-ubuntu-22.04.tar.gz -C duckdb-package .
+          tar -czf duckdb-${{ env.VERSION }}-linux_amd64.tar.gz -C duckdb-package .
 
           echo "DuckDB package created:"
           ls -la duckdb-*.tar.gz
 
       - name: Create extensions package
         run: |
-          tar -czf duckdb-extensions-${{ github.ref_name }}-ubuntu-22.04.tar.gz -C ./downloaded-artifacts/repository .
+          mkdir -p extensions-package/v${{ env.VERSION }}/linux_amd64
+
+          cp ./downloaded-artifacts/repository/*/*.duckdb_extension extensions-package/v${{ env.VERSION }}/linux_amd64/ 2>/dev/null || \
+          cp ./downloaded-artifacts/repository/*.duckdb_extension extensions-package/v${{ env.VERSION }}/linux_amd64/ 2>/dev/null || \
+          echo "Warning: No extension files found in expected locations"
+
+          tar -czf duckdb-graphar-extensions-linux_amd64.tar.gz -C extensions-package .
 
           echo "Extensions package created:"
-          ls -la duckdb-extensions-*.tar.gz
+          ls -la duckdb-graphar-*.tar.gz
+          echo "Package contents:"
+          tar -tzf duckdb-graphar-extensions-linux_amd64.tar.gz | head -10
 
-          echo "Package contents preview:"
-          tar -tzf duckdb-extensions-${{ github.ref_name }}-ubuntu-22.04.tar.gz | head -10
+      - name: Verify extension files
+        run: |
+          if ! tar -tzf duckdb-graphar-extensions-linux_amd64.tar.gz | grep -q "\.duckdb_extension"; then
+            echo "ERROR: No .duckdb_extension files found in the package!"
+            exit 1
+          fi
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            duckdb-${{ github.ref_name }}-ubuntu-22.04.tar.gz
-            duckdb-extensions-${{ github.ref_name }}-ubuntu-22.04.tar.gz
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo "Extension files verified:"
+          tar -tzf duckdb-graphar-extensions-linux_amd64.tar.gz | grep "\.duckdb_extension"
+
