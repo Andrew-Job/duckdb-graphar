@@ -1,0 +1,57 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ubuntu-artifacts
+          path: ./downloaded-artifacts
+
+      - name: Verify downloaded artifacts
+        run: |
+          echo "Contents of downloaded artifacts:"
+          ls -la ./downloaded-artifacts/
+
+          echo "Repository contents:"
+          ls -la -R ./downloaded-artifacts/repository/ || echo "Repository directory not found"
+
+
+      - name: Create DuckDB package
+        run: |
+          mkdir -p duckdb-package
+          cp ./downloaded-artifacts/duckdb duckdb-package/
+          tar -czf duckdb-${{ github.ref_name }}-ubuntu-22.04.tar.gz -C duckdb-package .
+
+          echo "DuckDB package created:"
+          ls -la duckdb-*.tar.gz
+
+      - name: Create extensions package
+        run: |
+          tar -czf duckdb-extensions-${{ github.ref_name }}-ubuntu-22.04.tar.gz -C ./downloaded-artifacts/repository .
+
+          echo "Extensions package created:"
+          ls -la duckdb-extensions-*.tar.gz
+
+          echo "Package contents preview:"
+          tar -tzf duckdb-extensions-${{ github.ref_name }}-ubuntu-22.04.tar.gz | head -10
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            duckdb-${{ github.ref_name }}-ubuntu-22.04.tar.gz
+            duckdb-extensions-${{ github.ref_name }}-ubuntu-22.04.tar.gz
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
