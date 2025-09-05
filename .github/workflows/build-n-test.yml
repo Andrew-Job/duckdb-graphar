@@ -3,7 +3,6 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main ]
-    tags: [ 'v*' ]
   pull_request:
     branches: [main]
 
@@ -124,38 +123,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-artifacts
+          name: duckdb-graphar-${{ matrix.os }}
           path: |
-            ./build/_deps/duckdb-build/duckdb
-            ./build/repository/
-          retention-days: 7
+            ./build/_deps/duckdb-build/extension/duckdb_graphar/duckdb_graphar.duckdb_extension
           if-no-files-found: error
-
-      - name: Generate Artifact Download Link (PR)
-        if: github.event_name == 'pull_request'
-        run: |
-          ARTIFACT_LINKS=""
-          for ARTIFACT in ${{ matrix.os }}-artifacts; do
-            LINK="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts?name=${ARTIFACT}"
-            ARTIFACT_LINKS="${ARTIFACT_LINKS}\n- [${ARTIFACT}](${LINK})"
-          done
-
-          COMMENT="## Build Artifacts Available 🔧
-          Artifacts have been generated for this PR and can be downloaded from:
-          ${ARTIFACT_LINKS}
-          echo "${COMMENT}" > artifact-links.md
-        shell: bash
-
-      - name: Comment Artifact Links on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const fs = require('fs');
-            const comment = fs.readFileSync('artifact-links.md', 'utf8');
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
