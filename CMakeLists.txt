@@ -129,20 +129,17 @@ set_target_properties(graphar::graphar_shared PROPERTIES
 add_dependencies(graphar::graphar_shared graphar arrow)
 
 # Set paths for shared libraries
-set(CMAKE_BUILD_RPATH
-    "@loader_path"
-    "${GRAPHAR_LIB_DIR}"
-    "${ARROW_LIB_DIR}"
-)
+if(APPLE)
+    set(LOADER_PATH "@loader_path")
+else()
+    set(LOADER_PATH "\$ORIGIN")
+endif()
 
-set(CMAKE_INSTALL_RPATH
-    "@loader_path"
-    "${GRAPHAR_LIB_DIR}"
-    "${ARROW_LIB_DIR}"
-)
-
+set(CMAKE_BUILD_RPATH "${LOADER_PATH}")
+set(CMAKE_INSTALL_RPATH "${LOADER_PATH}")
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 log_done()
 
