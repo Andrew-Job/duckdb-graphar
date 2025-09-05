@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  VERSION: '0.0.0'
-
 jobs:
   pr-title-check:
     name: PR Title Check
