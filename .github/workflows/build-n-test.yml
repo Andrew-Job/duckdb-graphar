@@ -197,4 +197,6 @@ jobs:
           name: duckdb-graphar-${{ matrix.os }}
           path: |
             ./build/_deps/duckdb-build/extension/duckdb_graphar/duckdb_graphar.duckdb_extension
+            ${{ matrix.os == 'macos-14' && './build/_deps/arrow-install/lib/libarrow.1700.0.0.dylib' || './build/_deps/arrow-install/lib/libarrow.so.1700.0.0' }}
+            ${{ matrix.os == 'macos-14' && './build/_deps/graphar-install/lib/libgraphar.dylib' || './build/_deps/graphar-install/lib/libgraphar.so' }}
           if-no-files-found: error
