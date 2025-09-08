@@ -130,9 +130,9 @@ add_dependencies(graphar::graphar_shared graphar arrow)
 
 # Set paths for shared libraries
 if(APPLE)
-    set(LOADER_PATH "@loader_path")
+  set(LOADER_PATH "@loader_path")
 else()
-    set(LOADER_PATH "$ORIGIN")
+  set(LOADER_PATH "\$ORIGIN")
 endif()
 
 set(CMAKE_BUILD_RPATH "${LOADER_PATH}")
@@ -147,11 +147,11 @@ log_done()
 set(DUCKDB_EXTENSION_CONFIGS "${CMAKE_CURRENT_SOURCE_DIR}/config/extension_config.cmake")
 
 log_stage("Declaring DuckDB")
-#if (LOAD_TESTS)  # DuckDB sql logical tests
-#    set(BUILD_UNITTESTS ON CACHE BOOL "")
-#else()
+if (LOAD_TESTS)  # DuckDB sql logical tests
+    set(BUILD_UNITTESTS ON CACHE BOOL "")
+else()
     set(BUILD_UNITTESTS OFF CACHE BOOL "")
-#endif()
+endif()
 set(ENABLE_SANITIZER OFF CACHE BOOL "")
 set(ENABLE_UBSAN OFF CACHE BOOL "")
 set(DISABLE_VPTR_SANITIZER ON CACHE BOOL "")
