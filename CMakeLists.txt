@@ -8,6 +8,7 @@ set(EXTENSION_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE STRING "Extension root 
 # =============================================
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(UNIX AND NOT APPLE)
@@ -62,8 +63,8 @@ ExternalProject_Add(
   SOURCE_SUBDIR cpp
   CMAKE_ARGS
     -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-    -DARROW_BUILD_SHARED=ON
-    -DARROW_BUILD_STATIC=OFF
+    -DARROW_BUILD_SHARED=OFF
+    -DARROW_BUILD_STATIC=ON
     -DARROW_BUILD_TESTS=OFF
     -DARROW_BUILD_BENCHMARKS=OFF
     -DARROW_BUILD_EXAMPLES=OFF
@@ -90,15 +91,15 @@ ExternalProject_Add(
   INSTALL_DIR ${ARROW_INSTALL_DIR}
 )
 
-add_library(arrow::arrow_shared SHARED IMPORTED GLOBAL)
+add_library(arrow::arrow_static STATIC IMPORTED GLOBAL)
 
 file(MAKE_DIRECTORY "${ARROW_INSTALL_DIR}/include")
-set_target_properties(arrow::arrow_shared PROPERTIES
-  IMPORTED_LOCATION "${ARROW_LIB_DIR}/libarrow${CMAKE_SHARED_LIBRARY_SUFFIX}"
+set_target_properties(arrow::arrow_static PROPERTIES
+  IMPORTED_LOCATION "${ARROW_LIB_DIR}/libarrow.a"
   INTERFACE_INCLUDE_DIRECTORIES ${ARROW_INSTALL_DIR}/include
 )
 
-add_dependencies(arrow::arrow_shared arrow)
+add_dependencies(arrow::arrow_static arrow)
 
 # GraphAr
 
@@ -108,10 +109,10 @@ ExternalProject_Add(
   graphar
   PREFIX ${GRAPHAR_PREFIX_DIR}
   GIT_REPOSITORY https://github.com/apache/incubator-graphar.git
-  # GIT_TAG main
   GIT_TAG 1a44bc343e0e846df129c78152f6310a1d678429
   SOURCE_SUBDIR cpp
   CMAKE_ARGS
+    -DUSE_STATIC_ARROW=ON
     -DCMAKE_INSTALL_PREFIX=${GRAPHAR_INSTALL_DIR}
     -DCMAKE_PREFIX_PATH=${ARROW_INSTALL_DIR}
     -DProtobuf_INCLUDE_DIR=${ARROW_PREFIX_DIR}/src/arrow-build/protobuf_ep-install/include
@@ -120,26 +121,13 @@ ExternalProject_Add(
   DEPENDS arrow
 )
 
-add_library(graphar::graphar_shared SHARED IMPORTED GLOBAL)
+add_library(graphar::graphar_static STATIC IMPORTED GLOBAL)
 
-set_target_properties(graphar::graphar_shared PROPERTIES
-  IMPORTED_LOCATION "${GRAPHAR_LIB_DIR}/libgraphar${CMAKE_SHARED_LIBRARY_SUFFIX}"
+set_target_properties(graphar::graphar_static PROPERTIES
+  IMPORTED_LOCATION "${GRAPHAR_LIB_DIR}/libgraphar.a"
 )
 
-add_dependencies(graphar::graphar_shared graphar arrow)
-
-# Set paths for shared libraries
-if(APPLE)
-  set(LOADER_PATH "@loader_path")
-else()
-  set(LOADER_PATH "\$ORIGIN")
-endif()
-
-set(CMAKE_BUILD_RPATH "${LOADER_PATH}")
-set(CMAKE_INSTALL_RPATH "${LOADER_PATH}")
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+add_dependencies(graphar::graphar_static graphar arrow)
 
 log_done()
 
