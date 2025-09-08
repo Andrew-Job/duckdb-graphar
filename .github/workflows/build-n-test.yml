@@ -208,4 +208,4 @@ jobs:
         with:
           name: duckdb-graphar-${{ matrix.os }}
           path: upload-artifacts
-        if-no-files-found: error
+          if-no-files-found: error
