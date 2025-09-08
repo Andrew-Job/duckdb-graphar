@@ -167,6 +167,7 @@ log_done()
 
 log_stage("Building DuckDB")
 FetchContent_MakeAvailable(duckdb)
+add_dependencies(duckdb arrow graphar)
 log_done()
 
 # Final build steps (DuckDB + extensions) is configured in config/CMakeLists.txt
