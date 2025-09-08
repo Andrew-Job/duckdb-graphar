@@ -147,11 +147,11 @@ log_done()
 set(DUCKDB_EXTENSION_CONFIGS "${CMAKE_CURRENT_SOURCE_DIR}/config/extension_config.cmake")
 
 log_stage("Declaring DuckDB")
-if (LOAD_TESTS)  # DuckDB sql logical tests
-    set(BUILD_UNITTESTS ON CACHE BOOL "")
-else()
+#if (LOAD_TESTS)  # DuckDB sql logical tests
+#    set(BUILD_UNITTESTS ON CACHE BOOL "")
+#else()
     set(BUILD_UNITTESTS OFF CACHE BOOL "")
-endif()
+#endif()
 set(ENABLE_SANITIZER OFF CACHE BOOL "")
 set(ENABLE_UBSAN OFF CACHE BOOL "")
 set(DISABLE_VPTR_SANITIZER ON CACHE BOOL "")
@@ -167,7 +167,9 @@ log_done()
 
 log_stage("Building DuckDB")
 FetchContent_MakeAvailable(duckdb)
-add_dependencies(duckdb arrow graphar)
+
+add_dependencies(unittest arrow graphar)
+
 log_done()
 
 # Final build steps (DuckDB + extensions) is configured in config/CMakeLists.txt
