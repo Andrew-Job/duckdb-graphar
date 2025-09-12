@@ -42,13 +42,22 @@ jobs:
             deps_command: |
               sudo apt-get update -qq
               sudo apt-get install -y --no-install-recommends \
+                binutils-gold \
                 build-essential \
                 cmake \
                 curl \
+                libbrotli-dev \
                 libcurl4-openssl-dev \
-                zlib1g-dev \
-                libzstd-dev \
+                libdouble-conversion-dev \
+                liblz4-dev \
+                libre2-dev \
                 libsnappy-dev \
+                libssl-dev \
+                libthrift-dev \
+                liburiparser-dev \
+                libutf8proc-dev \
+                libzstd-dev \
+                zlib1g-dev \
                 ccache
 
           - os: macos-14
@@ -105,7 +114,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DLOAD_TESTS=ON ..
+          cmake ..
 
       - name: Build
         run: |
@@ -194,14 +203,7 @@ jobs:
       - name: Prepare artifacts for upload
         run: |
           mkdir -p upload-artifacts
-          cp ./build/_deps/duckdb-build/extension/duckdb_graphar/duckdb_graphar.duckdb_extension upload-artifacts/
-          if [ "${{ matrix.os }}" == "macos-14" ]; then
-            cp ./build/_deps/arrow-install/lib/libarrow.1700.0.0.dylib upload-artifacts/
-            cp ./build/_deps/graphar-install/lib/libgraphar.dylib upload-artifacts/
-          else
-            cp ./build/_deps/arrow-install/lib/libarrow.so.1700.0.0 upload-artifacts/
-            cp ./build/_deps/graphar-install/lib/libgraphar.so upload-artifacts/
-          fi
+          cp build/_deps/duckdb-build/extension/duckdb_graphar/duckdb_graphar.duckdb_extension upload-artifacts/
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
