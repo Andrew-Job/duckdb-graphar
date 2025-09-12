@@ -41,6 +41,16 @@ set(EXT_LIBS
 find_library(CURL_LIB curl)
 list(APPEND EXT_LIBS ${CURL_LIB})
 
+#####
+add_custom_target(list_dirs
+    COMMAND ${CMAKE_COMMAND} -E echo "Directory structure -->:"
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR} find . -type d -print | sort
+    COMMENT "Listing all directories"
+    VERBATIM
+)
+#####
+
+
 #find_library(CURL_LIB curl)
 #find_library(SSL_LIB ssl)
 #find_library(CRYPTO_LIB crypto)
