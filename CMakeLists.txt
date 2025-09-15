@@ -151,10 +151,10 @@ set(DUCKDB_EXTENSION_CONFIGS "${CMAKE_CURRENT_SOURCE_DIR}/config/extension_confi
 set(ARROW_LIBS
     graphar::graphar_static
     arrow::arrow_static
-    "${ARROW_LIB_DIR}/libarrow_acero.a"
-    "${ARROW_LIB_DIR}/libarrow_bundled_dependencies.a"
-    "${ARROW_LIB_DIR}/libarrow_dataset.a"
-    "${ARROW_LIB_DIR}/libparquet.a"
+#    "${ARROW_LIB_DIR}/libarrow_acero.a"
+#    "${ARROW_LIB_DIR}/libarrow_bundled_dependencies.a"
+#    "${ARROW_LIB_DIR}/libarrow_dataset.a"
+#    "${ARROW_LIB_DIR}/libparquet.a"
 )
 
 #if(UNIX AND NOT APPLE)
@@ -166,7 +166,8 @@ set(ARROW_LIBS
 #    set(SYSTEM_LIBS ${CURL_LIB} ${OPENSSL_SSL_LIB} ${OPENSSL_CRYPTO_LIB} ${PTHREAD_LIB} ${DL_LIB})
 #endif()
 
-set(DUCKDB_CUSTOM_LIBRARIES ${ARROW_LIBS}) # ${SYSTEM_LIBS})
+set(DUCKDB_CUSTOM_LIBRARIES ${ARROW_LIBS})
+# ${SYSTEM_LIBS})
 
 log_stage("Declaring DuckDB")
 #if (LOAD_TESTS)  # DuckDB sql logical tests
