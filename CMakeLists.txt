@@ -149,12 +149,13 @@ log_done()
 # DuckDB
 set(DUCKDB_EXTENSION_CONFIGS "${CMAKE_CURRENT_SOURCE_DIR}/config/extension_config.cmake")
 set(ARROW_LIBS
-    graphar::graphar_static
-    arrow::arrow_static
-#    "${ARROW_LIB_DIR}/libarrow_acero.a"
-#    "${ARROW_LIB_DIR}/libarrow_bundled_dependencies.a"
-#    "${ARROW_LIB_DIR}/libarrow_dataset.a"
-#    "${ARROW_LIB_DIR}/libparquet.a"
+#    graphar::graphar_static
+#    arrow::arrow_static
+    "${ARROW_LIB_DIR}/libarrow.a"
+    "${ARROW_LIB_DIR}/libarrow_acero.a"
+    "${ARROW_LIB_DIR}/libarrow_bundled_dependencies.a"
+    "${ARROW_LIB_DIR}/libarrow_dataset.a"
+    "${ARROW_LIB_DIR}/libparquet.a"
 )
 
 #if(UNIX AND NOT APPLE)
