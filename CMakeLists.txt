@@ -65,7 +65,7 @@ ExternalProject_Add(
     -DCMAKE_POLICY_VERSION_MINIMUM=3.5
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 
-    -DARROW_BUILD_SHARED=ON
+    -DARROW_BUILD_SHARED=OFF
     -DARROW_BUILD_STATIC=ON
     -DARROW_BUILD_TESTS=OFF
     -DARROW_BUILD_BENCHMARKS=OFF
@@ -79,7 +79,6 @@ ExternalProject_Add(
 
     -DARROW_WITH_SNAPPY=ON
     -DARROW_RPATH_ORIGIN=ON
-    -DARROW_USE_LD_GOLD=ON
 
     -DARROW_BOOST_USE_SHARED=OFF
     -DARROW_BROTLI_USE_SHARED=OFF
@@ -105,14 +104,11 @@ ExternalProject_Add(
 
 add_library(arrow::arrow_static STATIC IMPORTED GLOBAL)
 
-#find_package(CURL REQUIRED)
-
 file(MAKE_DIRECTORY "${ARROW_INSTALL_DIR}/include")
 set_target_properties(arrow::arrow_static PROPERTIES
   IMPORTED_LOCATION "${ARROW_LIB_DIR}/libarrow.a"
   INTERFACE_INCLUDE_DIRECTORIES ${ARROW_INSTALL_DIR}/include
 )
-#  INTERFACE_LINK_LIBRARIES "CURL::libcurl"
 
 add_dependencies(arrow::arrow_static arrow)
 
@@ -152,6 +148,25 @@ log_done()
 
 # DuckDB
 set(DUCKDB_EXTENSION_CONFIGS "${CMAKE_CURRENT_SOURCE_DIR}/config/extension_config.cmake")
+set(ARROW_LIBS
+    graphar::graphar_static
+    arrow::arrow_static
+    "${ARROW_LIB_DIR}/libarrow_acero.a"
+    "${ARROW_LIB_DIR}/libarrow_bundled_dependencies.a"
+    "${ARROW_LIB_DIR}/libarrow_dataset.a"
+    "${ARROW_LIB_DIR}/libparquet.a"
+)
+
+#if(UNIX AND NOT APPLE)
+#    find_library(CURL_LIB curl)
+#    find_library(OPENSSL_SSL_LIB ssl)
+#    find_library(OPENSSL_CRYPTO_LIB crypto)
+#    find_library(PTHREAD_LIB pthread)
+#    find_library(DL_LIB dl)
+#    set(SYSTEM_LIBS ${CURL_LIB} ${OPENSSL_SSL_LIB} ${OPENSSL_CRYPTO_LIB} ${PTHREAD_LIB} ${DL_LIB})
+#endif()
+
+set(DUCKDB_CUSTOM_LIBRARIES ${ARROW_LIBS}) # ${SYSTEM_LIBS})
 
 log_stage("Declaring DuckDB")
 #if (LOAD_TESTS)  # DuckDB sql logical tests

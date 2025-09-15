@@ -114,7 +114,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake ..
+          cmake -DCMAKE_BUILD_TYPE=Release -DLOAD_TESTS=ON ..
 
       - name: Build
         run: |
@@ -127,7 +127,7 @@ jobs:
           ccache -s -v
 
       - name: Install GraphAr CLI
-        if: matrix.os == 'ubuntu-22.0x4'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           pip3 install --upgrade pip
           install_cli() {
@@ -154,7 +154,7 @@ jobs:
           install_cli
 
       - name: Generate GraphAr data
-        if: matrix.os == 'ubuntu-22.0x4'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           generate_graphar_data() {
             set -euxo pipefail
@@ -196,7 +196,7 @@ jobs:
           generate_graphar_data
 
       - name: Run Tests
-        if: matrix.os == 'ubuntu-22.0x4'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           build/_deps/duckdb-build/test/unittest "[graphar]" --reporter console  || exit 1
 
