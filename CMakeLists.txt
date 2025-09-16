@@ -161,17 +161,15 @@ set(ARROW_LIBS
     "${ARROW_LIB_DIR}/libparquet.a"
 )
 
-#if(UNIX AND NOT APPLE)
-#    find_library(CURL_LIB curl)
-#    find_library(OPENSSL_SSL_LIB ssl)
-#    find_library(OPENSSL_CRYPTO_LIB crypto)
-#    find_library(PTHREAD_LIB pthread)
-#    find_library(DL_LIB dl)
-#    set(SYSTEM_LIBS ${CURL_LIB} ${OPENSSL_SSL_LIB} ${OPENSSL_CRYPTO_LIB} ${PTHREAD_LIB} ${DL_LIB})
-#endif()
+find_library(CURL_LIB curl)
+find_library(OPENSSL_SSL_LIB ssl)
+find_library(OPENSSL_CRYPTO_LIB crypto)
+find_library(UTF8PROC_LIB utf8proc)
+# find_library(PTHREAD_LIB pthread)
+# find_library(DL_LIB dl)
+set(SYSTEM_LIBS ${CURL_LIB} ${OPENSSL_SSL_LIB} ${OPENSSL_CRYPTO_LIB} $(UTF8PROC_LIB))
 
-set(DUCKDB_CUSTOM_LIBRARIES ${ARROW_LIBS})
-# ${SYSTEM_LIBS})
+set(DUCKDB_CUSTOM_LIBRARIES ${ARROW_LIBS} ${SYSTEM_LIBS})
 
 log_stage("Declaring DuckDB")
 #if (LOAD_TESTS)  # DuckDB sql logical tests
