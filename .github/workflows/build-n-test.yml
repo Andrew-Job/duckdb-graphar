@@ -129,7 +129,7 @@ jobs:
             local ARROW_BUILD_DIR=$DEPS_DIR/arrow-prefix/src/arrow-build
             local PROTOBUF_INSTALL_DIR=$ARROW_BUILD_DIR/protobuf_ep-install
             local GRAPHAR_CLI_DIR=$DEPS_DIR/graphar-prefix/src/graphar/cli
-            
+
             local CMAKE_ARGS=(
               --config-settings=cmake.define.Arrow_DIR="$ARROW_INSTALL_DIR/lib/cmake/Arrow"
               --config-settings=cmake.define.Parquet_DIR="$ARROW_INSTALL_DIR/lib/cmake/Parquet"
@@ -139,7 +139,7 @@ jobs:
               --config-settings=cmake.define.Protobuf_LIBRARIES="$PROTOBUF_INSTALL_DIR/lib/libprotobuf.a"
               --config-settings=cmake.define.CMAKE_INSTALL_RPATH_USE_LINK_PATH=ON
             )
-            
+
             pip3 install "$GRAPHAR_CLI_DIR" "${CMAKE_ARGS[@]}"
           }
           install_cli
@@ -150,7 +150,7 @@ jobs:
           generate_graphar_data() {
             set -euxo pipefail
             local ROOT_DIR=$(pwd)
-  
+
             local GRAPH_DIR=$ROOT_DIR/data/snap-musae-github
             local GRAPH_IMPORT_TEMPLATE=$GRAPH_DIR/import.script.git.yaml
             local GRAPH_IMPORT=$GRAPH_DIR/import.git.yaml
@@ -158,29 +158,29 @@ jobs:
             mkdir -p "$GRAPH_RESULT_DIR"
             cp "$GRAPH_IMPORT_TEMPLATE" "$GRAPH_IMPORT"
             sed -i "s|\$DIR_PATH|$GRAPH_DIR|g" "$GRAPH_IMPORT"
-          
+
             graphar import -c "$GRAPH_IMPORT"
             rm "$GRAPH_IMPORT"
 
             local GRAPH_NAME=$(grep "name:" "$GRAPH_IMPORT_TEMPLATE" | head -n1 | sed 's/^[^:]*:[[:space:]]*//')
             local GRAPH_INFO_FILE=$GRAPH_RESULT_DIR/$GRAPH_NAME.graph.yaml
-  
+
             local edges=$(find "$GRAPH_RESULT_DIR" -maxdepth 1 -type f -name "*edge*" -exec basename {} \;)
             local vertices=$(find "$GRAPH_RESULT_DIR" -maxdepth 1 -type f -name "*vertex*" -exec basename {} \;)
-            
+
             {
               echo "edges:"
               for edge in "${edges[@]}"; do
               echo "  - $edge"
               done
-          
+
               echo "name: $GRAPH_NAME"
-          
+
               echo "vertices:"
               for vertex in "${vertices[@]}"; do
               echo "  - $vertex"
               done
-          
+
               echo "version: gar/v1"
             } > "$GRAPH_INFO_FILE"
           }
@@ -191,10 +191,20 @@ jobs:
         run: |
           build/_deps/duckdb-build/test/unittest "[graphar]" --reporter console  || exit 1
 
+      - name: Prepare artifacts for upload
+        run: |
+          mkdir -p upload-artifacts
+          cp build/_deps/duckdb-build/extension/duckdb_graphar/duckdb_graphar.duckdb_extension upload-artifacts/
+          if [ "${{ matrix.os }}" == "macos-14" ]; then
+            cp ./build/_deps/arrow-install/lib/libarrow.2100.0.0.dylib upload-artifacts/
+            cp ./build/_deps/graphar-install/lib/libgraphar.dylib upload-artifacts/
+          else
+            cp ./build/_deps/arrow-install/lib/libarrow.so.2100.0.0 upload-artifacts/
+            cp ./build/_deps/graphar-install/lib/libgraphar.so upload-artifacts/
+          fi
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: duckdb-graphar-${{ matrix.os }}
-          path: |
-            ./build/_deps/duckdb-build/extension/duckdb_graphar/duckdb_graphar.duckdb_extension
-          if-no-files-found: error
+          path: upload-artifacts
