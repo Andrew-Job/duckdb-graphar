@@ -55,9 +55,8 @@ jobs:
           - os: macos-14
             ccache_path: /opt/homebrew/opt/ccache/libexec
             deps_command: |
-              brew update
-              brew install cmake@3.30.2
               brew install curl ccache
+              cmake --version
 
     steps:
       - name: Checkout Repository
