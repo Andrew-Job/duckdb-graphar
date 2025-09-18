@@ -124,7 +124,7 @@ jobs:
           PROTOBUF_INSTALL_DIR=$ARROW_BUILD_DIR/protobuf_ep-install
           GRAPHAR_CLI_DIR=$DEPS_DIR/graphar-prefix/src/graphar/cli
 
-          local CMAKE_ARGS=(
+          CMAKE_ARGS=(
             --config-settings=cmake.define.Arrow_DIR="$ARROW_INSTALL_DIR/lib/cmake/Arrow"
             --config-settings=cmake.define.Parquet_DIR="$ARROW_INSTALL_DIR/lib/cmake/Parquet"
             --config-settings=cmake.define.ArrowDataset_DIR="$ARROW_INSTALL_DIR/lib/cmake/ArrowDataset"
