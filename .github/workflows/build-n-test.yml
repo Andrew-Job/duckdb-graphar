@@ -56,7 +56,8 @@ jobs:
             ccache_path: /opt/homebrew/opt/ccache/libexec
             deps_command: |
               brew update
-              brew upgrade
+              brew unistall cmake
+              brew install cmake@3.30.2
               brew install curl ccache
 
     steps:
