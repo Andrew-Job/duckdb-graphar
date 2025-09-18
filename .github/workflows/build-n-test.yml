@@ -36,7 +36,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-14]
+        os: [ubuntu-22.04, macos-15]
         include:
           - os: ubuntu-22.04
             ccache_dir: ~/.ccache
@@ -52,7 +52,7 @@ jobs:
                 libsnappy-dev \
                 ccache
 
-          - os: macos-14
+          - os: macos-15
             ccache_path: /opt/homebrew/opt/ccache/libexec
             deps_command: |
               brew update
@@ -81,7 +81,7 @@ jobs:
           echo "CCACHE_DIR=${{ matrix.ccache_dir }}" >> $GITHUB_ENV
           if [ "${{ matrix.os }}" = "ubuntu-22.04" ]; then
             echo "/usr/lib/ccache" >> $GITHUB_PATH
-          elif [ "${{ matrix.os }}" = "macos-14" ]; then
+          elif [ "${{ matrix.os }}" = "macos-15" ]; then
             echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
           fi
 
@@ -198,7 +198,7 @@ jobs:
           mkdir -p upload-artifacts/graphar
 
           cp build/_deps/duckdb-build/extension/duckdb_graphar/duckdb_graphar.duckdb_extension upload-artifacts/
-          if [ "${{ matrix.os }}" == "macos-14" ]; then
+          if [ "${{ matrix.os }}" == "macos-15" ]; then
             cp ./build/_deps/arrow-install/lib/libarrow.1900.dylib upload-artifacts/arrow/
             cp ./build/_deps/arrow-install/lib/libarrow_dataset.1900.dylib upload-artifacts/arrow/
             cp ./build/_deps/arrow-install/lib/libarrow_acero.1900.dylib upload-artifacts/arrow/
