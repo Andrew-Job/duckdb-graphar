@@ -59,7 +59,7 @@ ExternalProject_Add(
   arrow
   PREFIX ${ARROW_PREFIX_DIR}
   GIT_REPOSITORY https://github.com/apache/arrow.git
-  GIT_TAG apache-arrow-19.0.1
+  GIT_TAG apache-arrow-20.0.0
   SOURCE_SUBDIR cpp
   CMAKE_ARGS
     -DCMAKE_POLICY_VERSION_MINIMUM=3.5
