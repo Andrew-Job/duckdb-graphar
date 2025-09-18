@@ -59,7 +59,7 @@ ExternalProject_Add(
   arrow
   PREFIX ${ARROW_PREFIX_DIR}
   GIT_REPOSITORY https://github.com/apache/arrow.git
-  GIT_TAG apache-arrow-19.0.1
+  GIT_TAG apache-arrow-21.0.0
   SOURCE_SUBDIR cpp
   CMAKE_ARGS
     -DCMAKE_POLICY_VERSION_MINIMUM=3.5
@@ -83,12 +83,7 @@ ExternalProject_Add(
     -DARROW_PARQUET=ON
     -DARROW_S3=ON
 
-    -DARROW_WITH_BROTLI=OFF
-    -DARROW_WITH_BZ2=OFF
-    -DARROW_WITH_LZ4=OFF
     -DARROW_WITH_SNAPPY=ON
-    -DARROW_WITH_ZLIB=ON
-    -DARROW_WITH_ZSTD=ON
 
     -DARROW_GANDIVA=OFF
     -DARROW_TESTING=OFF
