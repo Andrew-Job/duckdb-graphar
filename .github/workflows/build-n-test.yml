@@ -55,7 +55,7 @@ jobs:
           - os: macos-14
             ccache_path: /opt/homebrew/opt/ccache/libexec
             deps_command: |
-              brew install curl ccache
+              brew install ccache
               cmake --version
 
     steps:
