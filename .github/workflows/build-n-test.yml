@@ -29,10 +29,28 @@ jobs:
               - Minor change: "MINOR description"`);
             }
 
+  lint:
+    name: C++ Style Check
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install clang-format-19
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 19 all
+          sudo apt-get install -y clang-format-19
+
+      - name: Verify C++ Code Style
+        run: |
+          find src/ include/ -name '*.cpp' -o -name '*.hpp' | xargs clang-format-19 --dry-run -Werror
+
   build:
     name: ${{ matrix.os }} Build and Test
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 120
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -45,13 +63,10 @@ jobs:
       - name: Install System Dependencies (Ubuntu)
         if: matrix.os == 'ubuntu-22.04'
         run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 19 all
-
+          sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
             build-essential cmake curl libcurl4-openssl-dev zlib1g-dev \
-            libzstd-dev libsnappy-dev ccache clang-format-19
+            libzstd-dev libsnappy-dev ccache python3-pip
 
       - name: Install System Dependencies (macOS)
         if: matrix.os == 'macos-14'
@@ -81,11 +96,6 @@ jobs:
           key: ${{ runner.os }}-deps-${{ hashFiles('CMakeLists.txt') }}
           restore-keys: |
             ${{ runner.os }}-deps
-
-      - name: Check C++ Code Style
-        if: matrix.os == 'ubuntu-22.04'
-        run: |
-          find src/ include/ -name '*.cpp' -o -name '*.hpp' | xargs clang-format-19 --dry-run -Werror
 
       - name: Configure CMake
         run: |
