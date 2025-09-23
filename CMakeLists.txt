@@ -98,15 +98,19 @@ ExternalProject_Add(
   INSTALL_DIR ${ARROW_INSTALL_DIR}
 )
 
-add_library(arrow::arrow_shared SHARED IMPORTED GLOBAL)
+#add_library(arrow::arrow_shared SHARED IMPORTED GLOBAL)
+add_library(arrow::arrow_static STATIC IMPORTED GLOBAL)
 
 file(MAKE_DIRECTORY "${ARROW_INSTALL_DIR}/include")
-set_target_properties(arrow::arrow_shared PROPERTIES
-  IMPORTED_LOCATION "${ARROW_LIB_DIR}/libarrow${CMAKE_SHARED_LIBRARY_SUFFIX}"
+#set_target_properties(arrow::arrow_shared PROPERTIES
+#  IMPORTED_LOCATION "${ARROW_LIB_DIR}/libarrow${CMAKE_SHARED_LIBRARY_SUFFIX}"
+set_target_properties(arrow::arrow_static PROPERTIES
+  IMPORTED_LOCATION "${ARROW_LIB_DIR}/libarrow.a"
   INTERFACE_INCLUDE_DIRECTORIES ${ARROW_INSTALL_DIR}/include
 )
 
-add_dependencies(arrow::arrow_shared arrow)
+#add_dependencies(arrow::arrow_shared arrow)
+add_dependencies(arrow::arrow_static arrow)
 
 # GraphAr
 
@@ -127,35 +131,17 @@ ExternalProject_Add(
   DEPENDS arrow
 )
 
-add_library(graphar::graphar_shared SHARED IMPORTED GLOBAL)
+#add_library(graphar::graphar_shared SHARED IMPORTED GLOBAL)
+add_library(graphar::graphar_static STATIC IMPORTED GLOBAL)
 
-set_target_properties(graphar::graphar_shared PROPERTIES
-  IMPORTED_LOCATION "${GRAPHAR_LIB_DIR}/libgraphar${CMAKE_SHARED_LIBRARY_SUFFIX}"
+#set_target_properties(graphar::graphar_shared PROPERTIES
+#  IMPORTED_LOCATION "${GRAPHAR_LIB_DIR}/libgraphar${CMAKE_SHARED_LIBRARY_SUFFIX}"
+set_target_properties(graphar::graphar_static PROPERTIES
+  IMPORTED_LOCATION "${GRAPHAR_LIB_DIR}/libgraphar.a"
 )
 
-add_dependencies(graphar::graphar_shared graphar arrow)
-
-# Set paths for shared libraries
-if(APPLE)
-    set(RPATH_ORIGIN "@loader_path")
-else()
-    set(RPATH_ORIGIN "\$ORIGIN")
-endif()
-
-set(CMAKE_BUILD_RPATH
-    "${RPATH_ORIGIN}"
-    "${GRAPHAR_LIB_DIR}"
-    "${ARROW_LIB_DIR}"
-)
-
-set(CMAKE_INSTALL_RPATH
-    "${RPATH_ORIGIN}"
-    "${GRAPHAR_LIB_DIR}"
-    "${ARROW_LIB_DIR}"
-)
-
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+#add_dependencies(graphar::graphar_shared graphar arrow)
+add_dependencies(graphar::graphar_static graphar arrow)
 
 log_done()
 

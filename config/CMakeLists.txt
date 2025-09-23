@@ -26,17 +26,33 @@ set(EXTENSION_INCLUDES
     $<BUILD_INTERFACE:${arrow_SOURCE_DIR}/cpp/src>
 )
 
+#target_include_directories(duckdb_graphar_extension PUBLIC ${EXTENSION_INCLUDES} $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+#target_include_directories(duckdb_graphar_loadable_extension PUBLIC ${EXTENSION_INCLUDES} $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_include_directories(duckdb_graphar_extension PUBLIC ${EXTENSION_INCLUDES} $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_include_directories(duckdb_graphar_loadable_extension PUBLIC ${EXTENSION_INCLUDES} $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
+#set(EXT_LIBS
+#    arrow::arrow_shared
+#    graphar::graphar_shared)
 set(EXT_LIBS
-    arrow::arrow_shared
-    graphar::graphar_shared)
+    arrow::arrow_static
+    graphar::graphar_static)
 
 if (NOT APPLE)
-    list(APPEND EXT_LIBS "-Wl,--disable-new-dtags") # Use rpath for ubuntu build
-endif()
+    set(STATIC_LINK_FLAGS "-static-libstdc++ -static-libgcc")
+    set(ARROW_DEPENDENCIES 
+        -lpthread
+        -ldl
+        -lrt
+        -lz
+        -lsnappy
+        -lcurl
+        -lssl
+        -lcrypto
+    )
 
+    list(APPEND EXT_LIBS ${STATIC_LINK_FLAGS} ${ARROW_DEPENDENCIES})
+endif()
 
 target_link_libraries(duckdb_graphar_extension
     duckdb_static
