@@ -47,43 +47,8 @@ jobs:
         run: |
           find src/ include/ -name '*.cpp' -o -name '*.hpp' | xargs clang-format-19 --dry-run -Werror
 
-  build-analyze:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Install PVS-Studio
-        run: |
-          wget -q -O - https://files.pvs-studio.com/etc/pubkey.txt \
-            | sudo apt-key add -
-          sudo wget -O /etc/apt/sources.list.d/viva64.list \
-            https://files.pvs-studio.com/etc/viva64.list
-          sudo apt update
-          sudo apt install pvs-studio
-          pvs-studio-analyzer credentials ${{ secrets.PVS_STUDIO_CREDENTIALS }}
-
-      - name: Build
-        run: |
-          cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=On -B build .
-          cmake --build build -j
-
-      - name: Analyze
-        run: |
-          pvs-studio-analyzer analyze -f build/compile_commands.json -j --exclude-path 'build/_deps/'
-
-      - name: Convert report
-        run: |
-          plog-converter -t sarif -o pvs-report.sarif PVS-Studio.log
-
-      - name: Publish report
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: pvs-report.sarif
-          category: PVS-Studio
-
   build:
-    name: ${{ matrix.os }} Build and Test
+    name: ${{ matrix.os }} Build, Analyze and Test
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     strategy:
@@ -102,6 +67,11 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             build-essential cmake curl libcurl4-openssl-dev zlib1g-dev \
             libzstd-dev libsnappy-dev ccache python3-pip
+
+          wget -q -O - https://files.pvs-studio.com/etc/pubkey.txt | sudo apt-key add -
+          sudo wget -O /etc/apt/sources.list.d/viva64.list https://files.pvs-studio.com/etc/viva64.list
+          sudo apt install -y pvs-studio
+          pvs-studio-analyzer credentials ${{ secrets.PVS_STUDIO_CREDENTIALS }}
 
       - name: Install System Dependencies (macOS)
         if: matrix.os == 'macos-14'
@@ -136,7 +106,12 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DLOAD_TESTS=ON ..
+
+          if [ "${{ matrix.os }}" = "ubuntu-22.04" ]; then
+            cmake -DCMAKE_BUILD_TYPE=Release -DLOAD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+          else
+            cmake -DCMAKE_BUILD_TYPE=Release -DLOAD_TESTS=ON ..
+          fi
 
       - name: Build
         run: |
@@ -199,6 +174,19 @@ jobs:
         if: matrix.os == 'ubuntu-22.04'
         run: |
           build/_deps/duckdb-build/test/unittest "[graphar]" --reporter console || exit 1
+
+      - name: Run PVS-Studio Analysis (Ubuntu)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          pvs-studio-analyzer analyze -f build/compile_commands.json -j --exclude-path 'build/_deps/'
+          plog-converter -t sarif -o pvs-report.sarif PVS-Studio.log
+
+      - name: Upload PVS-Studio Report
+        if: matrix.os == 'ubuntu-22.04'
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: pvs-report.sarif
+          category: PVS-Studio
 
       - name: Prepare Artifacts for Upload
         run: |
