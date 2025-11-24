@@ -4,15 +4,12 @@
 #include <duckdb/logging/logging.hpp>
 #include <duckdb/main/database.hpp>
 
+#include <optional>
+
 namespace duckdb {
 class GlobalLogManager {
 public:
-    static void Initialize(DatabaseInstance& db, LogLevel log_level = LogLevel::LOG_INFO) {
-        log_manager = db.GetLogManager();
-        log_manager.SetEnableLogging(true);
-        log_manager.SetLogStorage(db, "stdout");
-        log_manager.SetLogLevel(log_level);
-    }
+    static void Initialize(DatabaseInstance& db, LogLevel log_level = LogLevel::LOG_INFO);
 
     static LogManager& GetLogManager() {
         if (!log_manager.has_value()) {
